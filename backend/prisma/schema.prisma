@@ -1,0 +1,263 @@
+// Prisma Schema - Complif Database
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// PARTE 1: MÓDULO DE FIRMA ELECTRÓNICA
+// ============================================
+
+model Account {
+  id               String             @id @default(uuid())
+  name             String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  
+  signatureSchemas SignatureSchema[]
+  groups           Group[]
+  rules            Rule[]
+  signatureRequests SignatureRequest[]
+  signers          Signer[]
+  
+  @@map("accounts")
+}
+
+model SignatureSchema {
+  id        String   @id @default(uuid())
+  accountId String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  @@map("signature_schemas")
+}
+
+model Faculty {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  
+  rules            Rule[]
+  signatureRequests SignatureRequest[]
+  
+  @@map("faculties")
+}
+
+model Group {
+  id        String   @id @default(uuid())
+  accountId String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  account       Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  signerGroups  SignerGroup[]
+  signatures    Signature[]
+  
+  @@map("groups")
+}
+
+model Rule {
+  id         String   @id @default(uuid())
+  accountId  String
+  facultyId  String
+  ruleLogic  Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  account    Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  faculty    Faculty  @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  
+  @@unique([accountId, facultyId])
+  @@map("rules")
+}
+
+model SignatureRequest {
+  id           String   @id @default(uuid())
+  accountId    String
+  facultyId    String
+  documentName String
+  status       SignatureRequestStatus @default(PENDING)
+  createdAt    DateTime @default(now())
+  completedAt  DateTime?
+  updatedAt    DateTime @updatedAt
+  
+  account       Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  faculty       Faculty       @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  combinations  Combination[]
+  signatures    Signature[]
+  
+  @@map("signature_requests")
+}
+
+enum SignatureRequestStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
+model Combination {
+  id                   String   @id @default(uuid())
+  signatureRequestId   String
+  combinationIndex     Int
+  requiredSignatures   Json
+  isSatisfied          Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  
+  signatureRequest     SignatureRequest @relation(fields: [signatureRequestId], references: [id], onDelete: Cascade)
+  
+  @@unique([signatureRequestId, combinationIndex])
+  @@map("combinations")
+}
+
+model Signer {
+  id        String   @id @default(uuid())
+  accountId String
+  name      String
+  email     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  account       Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  signerGroups  SignerGroup[]
+  signatures    Signature[]
+  
+  @@unique([accountId, email])
+  @@map("signers")
+}
+
+model SignerGroup {
+  signerId   String
+  groupId    String
+  assignedAt DateTime @default(now())
+  
+  signer     Signer   @relation(fields: [signerId], references: [id], onDelete: Cascade)
+  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  
+  @@id([signerId, groupId])
+  @@map("signer_groups")
+}
+
+model Signature {
+  id                 String   @id @default(uuid())
+  signatureRequestId String
+  signerId           String
+  groupId            String
+  signedAt           DateTime @default(now())
+  signatureData      String?
+  
+  signatureRequest   SignatureRequest @relation(fields: [signatureRequestId], references: [id], onDelete: Cascade)
+  signer             Signer           @relation(fields: [signerId], references: [id], onDelete: Cascade)
+  group              Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  
+  @@unique([signatureRequestId, signerId])
+  @@map("signatures")
+}
+
+// ============================================
+// PARTE 2: ONBOARDING DE EMPRESAS
+// ============================================
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(VIEWER)
+  firstName    String?
+  lastName     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  createdBusinesses Business[]      @relation("CreatedBy")
+  statusChanges     StatusHistory[] @relation("ChangedBy")
+  
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  VIEWER
+}
+
+model Business {
+  id         String         @id @default(uuid())
+  name       String
+  taxId      String         @unique
+  country    String
+  industry   String
+  status     BusinessStatus @default(PENDING)
+  riskScore  Int            @default(0)
+  createdBy  String
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  
+  creator        User            @relation("CreatedBy", fields: [createdBy], references: [id])
+  documents      Document[]
+  statusHistory  StatusHistory[]
+  
+  @@index([status])
+  @@index([country])
+  @@index([createdAt])
+  @@map("businesses")
+}
+
+enum BusinessStatus {
+  PENDING
+  IN_REVIEW
+  APPROVED
+  REJECTED
+}
+
+model Document {
+  id           String       @id @default(uuid())
+  businessId   String
+  documentType DocumentType
+  fileName     String
+  filePath     String
+  fileSize     Int
+  mimeType     String
+  uploadedAt   DateTime     @default(now())
+  
+  business     Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  @@index([businessId])
+  @@map("documents")
+}
+
+enum DocumentType {
+  TAX_CERTIFICATE
+  REGISTRATION
+  INSURANCE_POLICY
+  INCORPORATION_DEED
+  POWER_OF_ATTORNEY
+  OTHER
+}
+
+model StatusHistory {
+  id             String   @id @default(uuid())
+  businessId     String
+  previousStatus BusinessStatus?
+  newStatus      BusinessStatus
+  changedBy      String
+  comment        String?
+  changedAt      DateTime @default(now())
+  
+  business       Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user           User     @relation("ChangedBy", fields: [changedBy], references: [id])
+  
+  @@index([businessId])
+  @@index([changedAt])
+  @@map("status_history")
+}
