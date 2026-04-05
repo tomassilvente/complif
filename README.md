@@ -1,8 +1,8 @@
-# Complif — Plataforma KYB de Onboarding
+# Plataforma KYB de Onboarding
 
 ## 1. Descripción del Proyecto
 
-Complif es una plataforma de cumplimiento **B2B2B Know Your Business (KYB)**. Permite a las empresas (clientes) incorporar a sus propios socios comerciales y proveedores a través de un flujo de trabajo de cumplimiento estructurado.
+Plataforma de cumplimiento **B2B2B Know Your Business (KYB)**. Permite a las empresas (clientes) incorporar a sus propios socios comerciales y proveedores a través de un flujo de trabajo de cumplimiento estructurado.
 
 La plataforma ofrece:
 - **Onboarding de empresas**: Recolección y almacenamiento de información sobre terceros (CUIT, país, industria).
