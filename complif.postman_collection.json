@@ -1,0 +1,670 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Complif API",
+    "description": "Complete API collection for the Complif KYB Onboarding Platform. Set the `token` environment variable by running the Login request first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.environment.set('token', pm.response.json().accessToken);",
+                  "    pm.test('Login successful and token saved', function () {",
+                  "        pm.response.to.have.status(200);",
+                  "        pm.expect(pm.response.json()).to.have.property('accessToken');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@complif.com\",\n  \"password\": \"Admin123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Authenticate with email and password. On success, the test script automatically saves the accessToken to the `token` environment variable."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Get the currently authenticated user's profile."
+          },
+          "response": []
+        },
+        {
+          "name": "Register User (Admin only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@complif.com\",\n  \"password\": \"Password123!\",\n  \"firstName\": \"New\",\n  \"lastName\": \"User\",\n  \"role\": \"VIEWER\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new user. Requires ADMIN role."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Invalidate the current session."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Businesses",
+      "item": [
+        {
+          "name": "Create Business",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Corp S.A.\",\n  \"taxId\": \"30-71234567-0\",\n  \"country\": \"Argentina\",\n  \"industry\": \"technology\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/businesses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "businesses"]
+            },
+            "description": "Create a new business. The tax ID is validated against the validation-service before saving. Risk score is calculated automatically."
+          },
+          "response": []
+        },
+        {
+          "name": "List Businesses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/businesses?status=PENDING&country=Argentina&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "businesses"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING",
+                  "description": "Filter by status: PENDING | IN_REVIEW | APPROVED | REJECTED"
+                },
+                {
+                  "key": "country",
+                  "value": "Argentina",
+                  "description": "Filter by country name"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Results per page"
+                }
+              ]
+            },
+            "description": "List all businesses with optional filters. Supports pagination."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Business by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/businesses/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "businesses", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "BUSINESS_UUID_HERE",
+                  "description": "The UUID of the business"
+                }
+              ]
+            },
+            "description": "Get a single business by UUID, including its documents and status history."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Business Status (Admin only)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\",\n  \"comment\": \"All documents verified. Approved for onboarding.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/businesses/:id/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "businesses", ":id", "status"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "BUSINESS_UUID_HERE"
+                }
+              ]
+            },
+            "description": "Update the status of a business. Requires ADMIN role. Status values: PENDING | IN_REVIEW | APPROVED | REJECTED."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Risk Score",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/businesses/:id/risk-score",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "businesses", ":id", "risk-score"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "BUSINESS_UUID_HERE"
+                }
+              ]
+            },
+            "description": "Get the detailed risk score breakdown for a business, including country risk, industry risk, and missing document penalties."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Documents",
+      "item": [
+        {
+          "name": "Upload Document (Admin only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "The document file to upload (PDF, JPG, PNG)"
+                },
+                {
+                  "key": "documentType",
+                  "value": "TAX_CERTIFICATE",
+                  "type": "text",
+                  "description": "One of: TAX_CERTIFICATE | REGISTRATION | INSURANCE_POLICY | INCORPORATION_DEED | POWER_OF_ATTORNEY | OTHER"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/upload/:businessId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", "upload", ":businessId"],
+              "variable": [
+                {
+                  "key": "businessId",
+                  "value": "BUSINESS_UUID_HERE"
+                }
+              ]
+            },
+            "description": "Upload a document for a business. Multipart form-data. If the same documentType was previously uploaded, it will be replaced. Requires ADMIN role."
+          },
+          "response": []
+        },
+        {
+          "name": "List Documents by Business ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/documents/:businessId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "documents", ":businessId"],
+              "variable": [
+                {
+                  "key": "businessId",
+                  "value": "BUSINESS_UUID_HERE"
+                }
+              ]
+            },
+            "description": "List all documents uploaded for a specific business."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Users (Admin only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            },
+            "description": "List all users. Requires ADMIN role."
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID (Admin only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "USER_UUID_HERE"
+                }
+              ]
+            },
+            "description": "Get a user by UUID. Requires ADMIN role."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Signature",
+      "item": [
+        {
+          "name": "Create Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Corp Signing Account\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/signature/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "signature", "accounts"]
+            },
+            "description": "Create a signing account that groups signers, groups, and rules."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Faculty",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"APPROVE_CONTRACT\",\n  \"name\": \"Approve Contract\",\n  \"description\": \"Faculty to approve contracts up to $100,000 USD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/signature/faculties",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "signature", "faculties"]
+            },
+            "description": "Create a faculty (permission type) that defines what is being authorized when signatures are collected."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Group",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"ACCOUNT_UUID_HERE\",\n  \"name\": \"Board of Directors\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/signature/groups",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "signature", "groups"]
+            },
+            "description": "Create a signer group within an account."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Rule",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"ACCOUNT_UUID_HERE\",\n  \"facultyId\": \"FACULTY_UUID_HERE\",\n  \"ruleLogic\": {\n    \"combinations\": [\n      { \"groupId\": \"GROUP_A_UUID\", \"minSigners\": 2 },\n      { \"groupId\": \"GROUP_B_UUID\", \"minSigners\": 1 }\n    ],\n    \"operator\": \"OR\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/signature/rules",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "signature", "rules"]
+            },
+            "description": "Define a signing rule linking an account, a faculty, and the required combination of group signatures."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Signature Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"ACCOUNT_UUID_HERE\",\n  \"facultyId\": \"FACULTY_UUID_HERE\",\n  \"documentName\": \"Service Agreement Q1 2026\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/signature/requests",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "signature", "requests"]
+            },
+            "description": "Create a new signature request for a document. The system will resolve the required combinations from the rule associated with the faculty."
+          },
+          "response": []
+        },
+        {
+          "name": "Sign Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"signerId\": \"SIGNER_UUID_HERE\",\n  \"groupId\": \"GROUP_UUID_HERE\",\n  \"signatureData\": \"base64-encoded-signature-or-token\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/signature/requests/:id/sign",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "signature", "requests", ":id", "sign"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "SIGNATURE_REQUEST_UUID_HERE"
+                }
+              ]
+            },
+            "description": "Submit a signature for an existing signature request. Once all required combinations are satisfied, the request status moves to COMPLETED."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Backend Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check backend service health. Returns status, timestamp, and uptime."
+          },
+          "response": []
+        },
+        {
+          "name": "Validation Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3002/health",
+              "raw": "http://localhost:3002/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3002",
+              "path": ["health"]
+            },
+            "description": "Check validation microservice health."
+          },
+          "response": []
+        },
+        {
+          "name": "Validate CUIT (GET)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3002/validate?taxId=20-12345678-9&country=Argentina",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3002",
+              "path": ["validate"],
+              "query": [
+                {
+                  "key": "taxId",
+                  "value": "20-12345678-9"
+                },
+                {
+                  "key": "country",
+                  "value": "Argentina"
+                }
+              ]
+            },
+            "description": "Validate an Argentine CUIT using the convenience GET endpoint."
+          },
+          "response": []
+        },
+        {
+          "name": "Validate RFC (POST)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"taxId\": \"XAA010101AAA\",\n  \"country\": \"Mexico\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3002/validate",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3002",
+              "path": ["validate"]
+            },
+            "description": "Validate a Mexican RFC using the POST endpoint."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

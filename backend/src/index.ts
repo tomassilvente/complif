@@ -5,17 +5,17 @@ import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 
-// Load environment variables
+// Cargar variables de entorno
 dotenv.config();
 
-// Import routes (we'll create these next)
+// Importar rutas
 import authRoutes from './routes/auth.routes';
 import businessRoutes from './routes/business.routes';
 import documentRoutes from './routes/document.routes';
 import userRoutes from './routes/user.routes';
 import signatureRoutes from './routes/signature.routes';
 
-// Import middleware
+// Importar middleware
 import { errorHandler } from './middleware/errorHandler';
 import { notFound } from './middleware/notFound';
 import { logger } from './utils/logger';

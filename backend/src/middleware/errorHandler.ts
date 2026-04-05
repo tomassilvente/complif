@@ -27,7 +27,7 @@ export const errorHandler = (
     });
   }
 
-  // Default error
+  // Error por defecto
   return res.status(500).json({
     status: 'error',
     message: process.env.NODE_ENV === 'production' 

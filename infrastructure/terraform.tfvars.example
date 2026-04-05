@@ -1,0 +1,20 @@
+# Copy this file to terraform.tfvars and fill in your values.
+# terraform.tfvars is gitignored — never commit real secrets.
+
+# AWS configuration
+aws_region   = "us-east-1"
+project_name = "complif"
+environment  = "dev"
+
+# Database credentials (use strong passwords in staging/prod)
+db_username = "complif"
+db_password = "CHANGE_ME_strong_password_here"
+db_name     = "complif_db"
+
+# JWT secret (generate with: openssl rand -hex 64)
+jwt_secret = "CHANGE_ME_generate_with_openssl_rand_hex_64"
+
+# ECR image URIs — replace with your actual account ID and region
+# Format: <account_id>.dkr.ecr.<region>.amazonaws.com/<repo>:<tag>
+backend_image    = "123456789012.dkr.ecr.us-east-1.amazonaws.com/complif-backend:latest"
+validation_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/complif-validation:latest"

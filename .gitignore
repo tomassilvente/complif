@@ -46,3 +46,7 @@ Thumbs.db
 # Prisma
 *.db
 *.db-journal
+
+#Guias Propias
+GUIA_COMPLETA.html
+SIGNATURE_SERVICE_DESGLOSE.html
