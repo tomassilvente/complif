@@ -1,21 +1,21 @@
 import { DocumentType } from '@prisma/client';
 import { calculateRiskScore } from '../src/services/risk.service';
 
-// Mock the Prisma client to avoid DB connections
+// Mock del cliente Prisma para evitar conexiones a la BD
 jest.mock('../src/config/database', () => ({
   __esModule: true,
   default: {},
 }));
 
-// Mock logger
+// Mock del logger
 jest.mock('../src/utils/logger', () => ({
   logger: { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() },
 }));
 
 describe('calculateRiskScore', () => {
-  // ─── Country risk ──────────────────────────────────────────────────────────
+  // ─── Riesgo por país ──────────────────────────────────────────────────────
 
-  it('adds 30 points for a high-risk country', () => {
+  it('suma 30 puntos por un país de alto riesgo', () => {
     const score = calculateRiskScore(
       { country: 'Russia', industry: 'technology' },
       [
@@ -27,7 +27,7 @@ describe('calculateRiskScore', () => {
     expect(score).toBe(30);
   });
 
-  it('adds 0 points for a low-risk country', () => {
+  it('suma 0 puntos por un país de bajo riesgo', () => {
     const score = calculateRiskScore(
       { country: 'Argentina', industry: 'technology' },
       [

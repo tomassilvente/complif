@@ -48,7 +48,19 @@ export function useCreateBusiness() {
   return useMutation({
     mutationFn: async (payload: Partial<Business>) => {
       const { data } = await api.post('/api/businesses', payload)
-      return data as Business
+      return (data.business ?? data) as Business
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['businesses'] })
+    },
+  })
+}
+
+export function useDeleteBusiness() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/api/businesses/${id}`)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['businesses'] })

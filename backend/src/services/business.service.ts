@@ -4,11 +4,32 @@ import { AppError } from '../middleware/errorHandler';
 import { calculateRiskScore, getRiskBreakdown } from './risk.service';
 import { CreateBusinessInput, ListBusinessesFilters, RiskScoreResult } from '../types';
 
+async function validateTaxId(taxId: string, country: string): Promise<void> {
+  const baseUrl = process.env.VALIDATION_SERVICE_URL || 'http://localhost:3002';
+  try {
+    const res = await fetch(`${baseUrl}/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ taxId, country }),
+    });
+    const result = await res.json() as { valid: boolean; message: string };
+    if (!result.valid) {
+      throw new AppError(400, `Tax ID inválido: ${result.message}`);
+    }
+  } catch (err) {
+    if (err instanceof AppError) throw err;
+    // Si el servicio de validación no está disponible, se permite continuar
+  }
+}
+
 export async function createBusiness(data: CreateBusinessInput, userId: string) {
+  // Validar formato del Tax ID según el país
+  await validateTaxId(data.taxId, data.country);
+
   // Verificar CUIT duplicado
   const existing = await prisma.business.findUnique({ where: { taxId: data.taxId } });
   if (existing) {
-    throw new AppError(409, `A business with taxId '${data.taxId}' already exists`);
+    throw new AppError(409, `Ya existe una empresa con el taxId '${data.taxId}'`);
   }
 
   // Crear empresa con estado PENDING
@@ -164,6 +185,21 @@ export async function updateBusinessStatus(
       },
     },
   });
+}
+
+export async function deleteBusiness(id: string) {
+  const business = await prisma.business.findUnique({ where: { id } });
+
+  if (!business) {
+    throw new AppError(404, 'Business not found');
+  }
+
+  // Eliminar en cascada: historial, documentos y luego la empresa
+  await prisma.statusHistory.deleteMany({ where: { businessId: id } });
+  await prisma.document.deleteMany({ where: { businessId: id } });
+  await prisma.business.delete({ where: { id } });
+
+  return { deleted: true };
 }
 
 export async function getBusinessRiskScore(id: string): Promise<RiskScoreResult> {

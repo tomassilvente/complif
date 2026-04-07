@@ -139,6 +139,7 @@ Todos los endpoints tienen el prefijo `http://localhost:3001`.
 | GET    | /api/businesses                | Bearer | Listar empresas (filtrar por estado, país)             |
 | GET    | /api/businesses/:id            | Bearer | Obtener una empresa con sus documentos                 |
 | PATCH  | /api/businesses/:id/status     | ADMIN  | Actualizar estado de empresa (con comentario opcional) |
+| DELETE | /api/businesses/:id            | ADMIN  | Eliminar una empresa y todos sus documentos e historial|
 | GET    | /api/businesses/:id/risk-score | Bearer | Obtener el desglose detallado del puntaje de riesgo    |
 
 ### Documentos
@@ -272,7 +273,7 @@ score_final = min(score, 100)
 
 **Países de alto riesgo**: Irán, Corea del Norte, Siria, Cuba, Sudán, Myanmar, Venezuela, Rusia, Bielorrusia, Libia, Somalia, Yemen.
 
-**Industrias de alto riesgo** (sin distinción de mayúsculas): construction, security, exchange, casino, gambling, casas de cambio, construccion, seguridad.
+**Industrias de alto riesgo** (sin distinción de mayúsculas): construction, security, exchange, casino, casinos, gambling, casas de cambio, construccion, construcción, seguridad.
 
 ---
 

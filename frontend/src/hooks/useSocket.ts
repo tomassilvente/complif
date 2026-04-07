@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
-// toast kept for document:uploaded notification below
+// toast utilizado para la notificación de document:uploaded más abajo
 import { getToken } from '@/lib/auth'
 
 export function useSocket() {

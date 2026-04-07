@@ -145,7 +145,7 @@ Variables clave que un agente puede necesitar:
 | `DATABASE_URL`           | Prisma — string de conexión a PostgreSQL              |
 | `JWT_SECRET`             | auth.service.ts — firmar/verificar JWTs               |
 | `JWT_EXPIRATION`         | auth.service.ts — tiempo de vida del token de acceso  |
-| `VALIDATION_SERVICE_URL` | controller de business — llamadas de validación externa|
+| `VALIDATION_SERVICE_URL` | business.service.ts — valida el taxId contra el microservicio antes de guardar|
 | `UPLOAD_DIR`             | controller de document — dónde se almacenan los archivos|
 | `CORS_ORIGIN`            | index.ts — origen del frontend permitido              |
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useBusiness } from '@/hooks/useBusinesses'
+import { useBusiness, useDeleteBusiness } from '@/hooks/useBusinesses'
 import { useAuth } from '@/hooks/useAuth'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { BusinessStatusBadge } from '@/components/business/BusinessStatusBadge'
@@ -25,6 +25,8 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
+import { Trash2 } from 'lucide-react'
 
 type Tab = 'info' | 'documents' | 'history'
 
@@ -40,8 +42,20 @@ export default function BusinessDetailPage() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<Tab>('info')
   const [showStatusModal, setShowStatusModal] = useState(false)
+  const deleteMutation = useDeleteBusiness()
 
   const { data: business, isLoading, error } = useBusiness(id)
+
+  const handleDelete = async () => {
+    if (!window.confirm('¿Estás seguro que querés eliminar esta empresa? Esta acción no se puede deshacer.')) return
+    try {
+      await deleteMutation.mutateAsync(id)
+      toast.success('Empresa eliminada.')
+      router.push('/businesses')
+    } catch {
+      toast.error('No se pudo eliminar la empresa.')
+    }
+  }
 
   if (isLoading) {
     return (
@@ -102,14 +116,26 @@ export default function BusinessDetailPage() {
               </div>
             </div>
             {user?.role === 'ADMIN' && (
-              <Button
-                onClick={() => setShowStatusModal(true)}
-                size="sm"
-                className="gap-1.5"
-              >
-                <RefreshCw size={14} />
-                Cambiar Estado
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowStatusModal(true)}
+                  size="sm"
+                  className="gap-1.5"
+                >
+                  <RefreshCw size={14} />
+                  Cambiar Estado
+                </Button>
+                <Button
+                  onClick={handleDelete}
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 text-red-600 border-red-200 hover:bg-red-50"
+                  isLoading={deleteMutation.isPending}
+                >
+                  <Trash2 size={14} />
+                  Eliminar
+                </Button>
+              </div>
             )}
           </div>
         </CardContent>

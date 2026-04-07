@@ -121,6 +121,19 @@ export async function updateStatus(
   }
 }
 
+export async function deleteBusiness(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const result = await businessService.deleteBusiness(req.params.id);
+    res.json({ status: 'success', data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function getBusinessRiskScore(
   req: AuthRequest,
   res: Response,

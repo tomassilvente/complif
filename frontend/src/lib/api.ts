@@ -18,7 +18,7 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => {
-    // Unwrap backend envelope: { status, data } → return inner data directly
+    // Desenvuelve el sobre del backend: { status, data } → devuelve el data interno directamente
     if (response.data && response.data.status === 'success' && 'data' in response.data) {
       response.data = response.data.data
     }

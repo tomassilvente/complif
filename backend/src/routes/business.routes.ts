@@ -16,8 +16,11 @@ router.get('/', businessController.listBusinesses);
 // GET /api/businesses/:id
 router.get('/:id', businessController.getBusinessById);
 
-// PATCH /api/businesses/:id/status  (ADMIN only)
+// PATCH /api/businesses/:id/status  (solo ADMIN)
 router.patch('/:id/status', authorize('ADMIN'), businessController.updateStatus);
+
+// DELETE /api/businesses/:id  (solo ADMIN)
+router.delete('/:id', authorize('ADMIN'), businessController.deleteBusiness);
 
 // GET /api/businesses/:id/risk-score
 router.get('/:id/risk-score', businessController.getBusinessRiskScore);

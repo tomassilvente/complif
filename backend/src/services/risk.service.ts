@@ -20,9 +20,11 @@ const HIGH_RISK_INDUSTRIES = [
   'security',
   'exchange',
   'casino',
+  'casinos',
   'gambling',
   'casas de cambio',
   'construccion',
+  'construcción',
   'seguridad',
 ];
 
